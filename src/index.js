@@ -80,7 +80,16 @@ function mdLinks(filePath, options = { validate: false }) {
     });
 }
 
-module.exports = mdLinks;
+module.exports = {
+  isFile,
+  isMarkdownFile,
+  getFilesFromDirectory,
+  readFileContent,
+  extractLinks,
+  validateLink,
+  mdLinks,
+};
+
 
 //const mdLinks = require('./src/mdlinks/mdLinks');
 
