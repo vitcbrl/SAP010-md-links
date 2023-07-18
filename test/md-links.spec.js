@@ -17,12 +17,20 @@ describe('isFile', () => {
 
   test('Deve retornar false se o caminho não aponta para um arquivo', async () => {
     const directoryPath = path.resolve(__dirname, 'testDirectory');
-    await fs.mkdir(directoryPath);
+    const isDir = await fs
+      .mkdir(directoryPath)
+      .then(() => true)
+      .catch((err) => {
+        if (err.code === 'EEXIST') return true; // O diretório já existe
+        return false;
+      });
 
     const result = await mdLinks.isFile(directoryPath);
-    expect(result).toBe(false);
+    expect(result).toBe(!isDir);
 
-    await fs.rmdir(directoryPath); // Removendo o diretório de teste após o teste
+    if (!isDir) {
+      await fs.rmdir(directoryPath); // Removendo o diretório de teste após o teste
+    }
   });
 });
 
@@ -41,9 +49,20 @@ describe('isMarkdownFile', () => {
 });
 
 describe('getFilesFromDirectory', () => {
-  test('Deve retornar uma lista de arquivos em um diretório', async () => {
-    const directoryPath = path.resolve(__dirname, 'testDirectory');
+  let directoryPath; // Variável para armazenar o diretório de teste
+
+  beforeAll(async () => {
+    // Criar o diretório de teste apenas uma vez antes de todos os testes
+    directoryPath = path.resolve(__dirname, 'testDirectory');
     await fs.mkdir(directoryPath);
+  });
+
+  afterAll(async () => {
+    // Remover o diretório de teste após todos os testes serem concluídos
+    await fs.rmdir(directoryPath);
+  });
+
+  test('Deve retornar uma lista de arquivos em um diretório', async () => {
     const filePath1 = path.join(directoryPath, 'file1.md');
     const filePath2 = path.join(directoryPath, 'file2.txt');
     await fs.writeFile(filePath1, 'Conteúdo do arquivo 1');
@@ -54,7 +73,6 @@ describe('getFilesFromDirectory', () => {
 
     await fs.unlink(filePath1); // Removendo os arquivos de teste após o teste
     await fs.unlink(filePath2);
-    await fs.rmdir(directoryPath);
   });
 });
 
