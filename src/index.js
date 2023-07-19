@@ -40,15 +40,17 @@ function extractLinks(content, file) {
   return links;
 }
 
-async function validateLink(link) {
-  try {
-    const response = await axios.head(link.href);
-    link.status = response.status;
-    link.ok = 'ok';
-  } catch (error) {
-    link.status = error.response ? error.response.status : 'N/A';
-    link.ok = 'fail';
-  }
+function validateLink(link) {
+  return axios
+    .head(link.href)
+    .then((response) => {
+      link.status = response.status;
+      link.ok = 'ok';
+    })
+    .catch((error) => {
+      link.status = error.response ? error.response.status : 'N/A';
+      link.ok = 'fail';
+    });
 }
 
 function mdLinks(filePath, options = { validate: false }) {
@@ -89,7 +91,6 @@ module.exports = {
   validateLink,
   mdLinks,
 };
-
 
 //const mdLinks = require('./src/mdlinks/mdLinks');
 
