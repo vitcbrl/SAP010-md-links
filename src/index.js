@@ -28,23 +28,24 @@ function readFileContent(filePath) {
   return fs.readFile(filePath, 'utf-8');
 }
 
-function extractLinks(markdown) {
-  const links = [];
-  const renderer = new marked.Renderer();
+function extractLinks(markdown, file) {
+  const linkRegex = /\[(.*?)\]\((.*?)\)/g;
+  const matches = [];
+  let match;
 
-  renderer.link = (href, _title, text) => {
-    links.push({ href, text });
-  };
+  while ((match = linkRegex.exec(markdown))) {
+    const [, text, href] = match;
+    matches.push({ href, text, file });
+  }
 
-  marked(markdown, { renderer });
-
-  return links;
+  return matches;
 }
+
 
 
 function validateLink(link) {
   return new Promise((resolve) => {
-    fetch(link.href, { redirect: 'manual' }) // Adicionando a opção 'redirect: manual' para evitar redirecionamentos
+    fetch(link.href) // Adicionando a opção 'redirect: manual' para evitar redirecionamentos
       .then((response) => {
         link.status = response.status;
         link.ok = response.ok;
@@ -99,29 +100,3 @@ module.exports = {
   validateLink,
   mdLinks,
 };
-
-//const mdLinks = require('./src/mdlinks/mdLinks');
-
-/*mdLinks('./src/mdlinks/file1.md')
-  .then((links) => {
-    console.log(links);
-  })
-  .catch((error) => {
-    console.error(error.message);
-  });
-
-mdLinks('./src/mdlinks/file2.md', { validate: true })
-  .then((links) => {
-    console.log(links);
-  })
-  .catch((error) => {
-    console.error(error.message);
-  });
-
-mdLinks('./src/mdlinks', { validate: true })
-  .then((links) => {
-    console.log(links);
-  })
-  .catch((error) => {
-    console.error(error.message);
-  });*/
