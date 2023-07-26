@@ -1,7 +1,7 @@
 const fs = require('fs').promises;
 const path = require('path');
 const marked = require('marked');
-const axios = require('axios');
+const fetch = require('isomorphic-fetch');
 
 function isFile(filePath) {
   return fs
@@ -28,30 +28,36 @@ function readFileContent(filePath) {
   return fs.readFile(filePath, 'utf-8');
 }
 
-function extractLinks(content, file) {
+function extractLinks(markdown) {
   const links = [];
   const renderer = new marked.Renderer();
 
-  renderer.link = (href, title, text) => {
-    links.push({ href, text, file });
+  renderer.link = (href, _title, text) => {
+    links.push({ href, text });
   };
 
-  marked(content, { renderer });
+  marked(markdown, { renderer });
+
   return links;
 }
 
+
 function validateLink(link) {
-  return axios
-    .head(link.href)
-    .then((response) => {
-      link.status = response.status;
-      link.ok = 'ok';
-    })
-    .catch((error) => {
-      link.status = error.response ? error.response.status : 'N/A';
-      link.ok = 'fail';
-    });
+  return new Promise((resolve) => {
+    fetch(link.href, { redirect: 'manual' }) // Adicionando a opção 'redirect: manual' para evitar redirecionamentos
+      .then((response) => {
+        link.status = response.status;
+        link.ok = response.ok;
+        resolve(link);
+      })
+      .catch(() => {
+        link.status = 404;
+        link.ok = false;
+        resolve(link);
+      });
+  });
 }
+
 
 function mdLinks(filePath, options = { validate: false }) {
   const absolutePath = path.resolve(filePath);
@@ -76,11 +82,13 @@ function mdLinks(filePath, options = { validate: false }) {
     })
     .then((links) => {
       if (options.validate) {
-        return Promise.all(links.map(validateLink)).then(() => links);
+        const linkPromises = links.map((link) => validateLink(link));
+        return Promise.all(linkPromises).then(() => links);
       }
       return links;
     });
 }
+
 
 module.exports = {
   isFile,
@@ -94,7 +102,7 @@ module.exports = {
 
 //const mdLinks = require('./src/mdlinks/mdLinks');
 
-mdLinks('./src/mdlinks/file1.md')
+/*mdLinks('./src/mdlinks/file1.md')
   .then((links) => {
     console.log(links);
   })
@@ -116,4 +124,4 @@ mdLinks('./src/mdlinks', { validate: true })
   })
   .catch((error) => {
     console.error(error.message);
-  });
+  });*/

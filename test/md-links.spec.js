@@ -3,6 +3,8 @@ const path = require('path');
 const axios = require('axios');
 const MockAdapter = require('axios-mock-adapter');
 const mdLinks = require('../src/index.js');
+const chalk = require('chalk'); // Certifique-se de que o chalk está instalado em seu projeto
+
 
 describe('isFile', () => {
   test('Deve retornar true se o caminho aponta para um arquivo', async () => {
@@ -48,13 +50,24 @@ describe('isMarkdownFile', () => {
   });
 });
 
+
 describe('getFilesFromDirectory', () => {
+  // Mova a declaração de directoryPath para fora do bloco describe
   let directoryPath; // Variável para armazenar o diretório de teste
 
   beforeAll(async () => {
-    // Criar o diretório de teste apenas uma vez antes de todos os testes
+    // Definir o caminho do diretório de teste antes de criar o diretório
     directoryPath = path.resolve(__dirname, 'testDirectory');
-    await fs.mkdir(directoryPath);
+
+    // Verificar se o diretório já existe antes de criá-lo
+    const isDir = await fs
+      .access(directoryPath)
+      .then(() => true)
+      .catch(() => false);
+
+    if (!isDir) {
+      await fs.mkdir(directoryPath);
+    }
   });
 
   afterAll(async () => {
@@ -75,7 +88,6 @@ describe('getFilesFromDirectory', () => {
     await fs.unlink(filePath2);
   });
 });
-
 describe('readFileContent', () => {
   test('Deve ler o conteúdo de um arquivo', async () => {
     const filePath = path.resolve(__dirname, 'testFile.txt');
@@ -90,20 +102,27 @@ describe('readFileContent', () => {
 });
 
 describe('extractLinks', () => {
-  test('Deve extrair os links de um conteúdo Markdown', () => {
+  test('Deve extrair os links de um conteúdo Markdown', async () => {
     const content = `
       [Link 1](https://example.com)
       [Link 2](https://www.google.com)
     `;
     const file = 'path/to/file.md';
-    const result = mdLinks.extractLinks(content, file);
     const expected = [
       { href: 'https://example.com', text: 'Link 1', file },
       { href: 'https://www.google.com', text: 'Link 2', file },
     ];
+
+    const result = await mdLinks.extractLinks(content, file);
+
+    console.log('Resultado:', result); // Adicione este log temporário
+
     expect(result).toEqual(expected);
   });
 });
+
+
+
 
 describe('validateLink', () => {
   test('Deve validar um link existente', async () => {
@@ -126,5 +145,117 @@ describe('validateLink', () => {
 
     expect(link.status).toBe(404);
     expect(link.ok).toBe('fail');
+  });
+});
+
+describe('imprimirLinks', () => {
+  test('Deve imprimir os links com status "ok"', () => {
+    // Dados de link de exemplo com status "ok"
+    const links = [
+      {
+        file: 'file1.md',
+        href: 'https://example.com',
+        ok: 'ok',
+        status: 200,
+        text: 'Link de exemplo 1',
+      },
+      {
+        file: 'file2.md',
+        href: 'https://www.google.com',
+        ok: 'ok',
+        status: 200,
+        text: 'Link de exemplo 2',
+      },
+    ];
+
+    // Capturando a saída da função imprimirLinks
+    const consoleSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
+
+    mdLinks.imprimirLinks(links);
+
+    // Verificando se a função console.log foi chamada com os argumentos corretos
+    expect(consoleSpy).toHaveBeenCalledWith(
+      chalk.gray('file1.md'),
+      chalk.cyan('https://example.com'),
+      chalk.bgGreen(' ok '),
+      chalk.yellow('Link de exemplo 1')
+    );
+
+    expect(consoleSpy).toHaveBeenCalledWith(
+      chalk.gray('file2.md'),
+      chalk.cyan('https://www.google.com'),
+      chalk.bgGreen(' ok '),
+      chalk.yellow('Link de exemplo 2')
+    );
+
+    // Restaurando a função console.log original
+    consoleSpy.mockRestore();
+  });
+
+  test('Deve imprimir os links com status "fail" e o código de status', () => {
+    // Dados de link de exemplo com status "fail"
+    const links = [
+      {
+        file: 'file3.md',
+        href: 'https://invalidlink.com',
+        ok: 'fail',
+        status: 404,
+        text: 'Link inválido 1',
+      },
+      {
+        file: 'file4.md',
+        href: 'https://expiredlink.com',
+        ok: 'fail',
+        status: 410,
+        text: 'Link inválido 2',
+      },
+    ];
+
+    // Capturando a saída da função imprimirLinks
+    const consoleSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
+
+    mdLinks.imprimirLinks(links);
+
+    // Verificando se a função console.log foi chamada com os argumentos corretos
+    expect(consoleSpy).toHaveBeenCalledWith(
+      chalk.gray('file3.md'),
+      chalk.cyan('https://invalidlink.com'),
+      chalk.bgRed(' fail 404 '),
+      chalk.yellow('Link inválido 1')
+    );
+
+    expect(consoleSpy).toHaveBeenCalledWith(
+      chalk.gray('file4.md'),
+      chalk.cyan('https://expiredlink.com'),
+      chalk.bgRed(' fail 410 '),
+      chalk.yellow('Link inválido 2')
+    );
+
+    // Restaurando a função console.log original
+    consoleSpy.mockRestore();
+  });
+});
+
+describe('imprimirEstatisticas', () => {
+  test('Deve imprimir as estatísticas dos links corretamente', () => {
+    // Dados de link de exemplo
+    const links = [
+      { href: 'https://example.com', text: 'Link de exemplo 1', ok: 'ok', status: 200 },
+      { href: 'https://www.google.com', text: 'Link de exemplo 2', ok: 'ok', status: 200 },
+      { href: 'https://invalidlink.com', text: 'Link inválido 1', ok: 'fail', status: 404 },
+    ];
+
+    // Capturando a saída da função imprimirEstatisticas
+    const consoleSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
+
+    mdLinks.imprimirEstatisticas(links);
+
+    // Verificando se a função console.log foi chamada com os argumentos corretos
+    expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining(chalk.bold('Estatísticas dos links:')));
+    expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining(chalk.yellow('Total: 3')));
+    expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining(chalk.yellow('Quebrados: 1')));
+
+    // Restaurando a função console.log original
+    consoleSpy.mockRestore();
   });
 });
