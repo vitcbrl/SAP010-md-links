@@ -37,3 +37,8 @@ mdlinks ./meu-arquivo.md --validate --stats
 
 Agora você está pronto para explorar e analisar os links em seus arquivos Markdown com facilidade e praticidade!
 
+## 3. Funcionalidades 
+### 3.1 Validação de links 
+Ao empregar a opção --validate na linha de comando (CLI), a biblioteca executará a verificação dos links encontrados por meio de solicitações HTTP. Essa ação tem o propósito de determinar se os links estão funcionando corretamente ou se apresentam problemas. Os links que se mostrarem funcionais receberão o rótulo "ok", enquanto aqueles que não estiverem acessíveis serão marcados como "fail".
+
+![links](../SAP010-md-links/src/imgs/validate.png)
