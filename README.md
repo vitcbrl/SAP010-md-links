@@ -38,17 +38,22 @@ mdlinks ./meu-arquivo.md --validate --stats
 Agora você está pronto para explorar e analisar os links em seus arquivos Markdown com facilidade e praticidade!
 
 ## 3. Funcionalidades 
-### 3.1 Validação de links 
+### 3.1 
+A biblioteca executa a tarefa de examinar o conteúdo do arquivo .md, identificar os padrões que representam links e extrair os detalhes relevantes desses links. 
+
+![preview](./src/imgs/caminho.png)
+
+### 3.2 Validação de links 
 Ao empregar a opção --validate na linha de comando (CLI), a biblioteca executará a verificação dos links encontrados por meio de solicitações HTTP. Essa ação tem o propósito de determinar se os links estão funcionando corretamente ou se apresentam problemas. Os links que se mostrarem funcionais receberão o rótulo "ok" e o número "200", enquanto aqueles que não estiverem acessíveis serão marcados como "fail" e o número "404".
 
 ![preview](./src/imgs/validate.png)
 
-### 3.2 Estatísticas de Links
+### 3.3 Estatísticas de Links
 Ao selecionar a opção --stats ao utilizar a linha de comando (CLI), a biblioteca apresentará informações estatísticas referentes aos links identificados no arquivo. Essas estatísticas compreenderão tanto a contagem total de links quanto a quantidade de links distintos encontrados.
 
 ![preview](./src/imgs/stats.png)
 
-### 3.3 Validação e Estatísticas de Links
+### 3.4 Validação e Estatísticas de Links
 Ao empregar conjuntamente as opções --validate e --stats na interface de linha de comando (CLI), a biblioteca proporcionará uma análise abrangente. Isso abrangerá não apenas a exibição das estatísticas relativas aos links descobertos, incluindo sua quantidade total e a contagem de links únicos, mas também envolverá a verificação individual da validade de cada link encontrado. Nesse processo, os links serão minuciosamente testados para determinar se estão ativos ou apresentam falhas, conferindo assim um panorama completo sobre a saúde e a integridade dos links contidos no arquivo.
 
 ![preview](./src/imgs/validatestats.png)
