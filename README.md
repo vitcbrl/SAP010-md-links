@@ -38,8 +38,8 @@ mdlinks ./meu-arquivo.md --validate --stats
 Agora você está pronto para explorar e analisar os links em seus arquivos Markdown com facilidade e praticidade!
 
 ## 3. Funcionalidades 
-### 3.1 
-A biblioteca executa a tarefa de examinar o conteúdo do arquivo .md, identificar os padrões que representam links e extrair os detalhes relevantes desses links. 
+### 3.1 Extração de links
+A biblioteca executa a tarefa de examinar o conteúdo do arquivo .md, identificar os padrões que representam links e extrair os detalhes relevantes desses links. (execute no terminal do bash)
 
 ![preview](./src/imgs/caminho.png)
 
