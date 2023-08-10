@@ -1,6 +1,5 @@
 const fs = require('fs').promises;
 const path = require('path');
-const marked = require('marked');
 const fetch = require('isomorphic-fetch');
 
 function isFile(filePath) {
